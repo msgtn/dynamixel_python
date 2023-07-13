@@ -142,5 +142,8 @@ class DynamixelManager(object):
     def for_all(self, func):
         for motor in self.dxl_dict.values():
             func(motor)
-
+                
+    def reboot(self):
+        for motor in self.dxl_dict.values():
+            self.packetHandler.reboot(self.portHandler,motor.id)
 
