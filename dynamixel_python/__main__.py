@@ -29,8 +29,8 @@ class DynamixelMotor(object):
     def get_com_return(self, res, err):
         if res != dxl.COMM_SUCCESS:
             return False
-        if err != 0:
-            return False
+        # if err != 0:
+        #     return False
         return True
 
     def ping(self):

@@ -3,6 +3,8 @@ Name: dynamixel-python
 Version: 0.0.1
 Summary: python wrapper for the dynamixel sdk
 Author: Rocco DiVerdi
+License: UNKNOWN
+Platform: UNKNOWN
 Requires-Python: >=3
 Description-Content-Type: text/markdown
 License-File: LICENSE
@@ -111,4 +113,6 @@ The other examples assume you have multiple motors, but also demonstrate some mo
 
 - multiple_motors incorporates DynamixelManager in a class and demonstrates some nice features for interacting with multiple motors at a time.
 - two_wheel_robot demonstrates velocity control
+
+
 
