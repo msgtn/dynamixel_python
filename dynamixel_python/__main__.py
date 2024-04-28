@@ -63,6 +63,7 @@ class DynamixelMotor(object):
                     self.portHandler, self.id, address)
         else:
             raise InvalidDataSize("write data called with size " + str(size))
+        # print(size, address, res, err)
         if not self.get_com_return(res, err):
             raise ReadError("packet handler responded with " + str(res))
         return val
@@ -130,7 +131,8 @@ class DynamixelManager(object):
     def enable_all(self):
         success = True
         for motor in self.dxl_dict.values():
-            success &= motor.set_torque_enable(True)
+            if not motor.get_torque_enable():
+                success &= motor.set_torque_enable(True)
         return success
 
     def disable_all(self):
