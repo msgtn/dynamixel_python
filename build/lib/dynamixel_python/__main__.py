@@ -29,8 +29,8 @@ class DynamixelMotor(object):
     def get_com_return(self, res, err):
         if res != dxl.COMM_SUCCESS:
             return False
-        if err != 0:
-            return False
+        # if err != 0:
+        #     return False
         return True
 
     def ping(self):
@@ -38,34 +38,49 @@ class DynamixelMotor(object):
         return self.get_com_return(res, err)
 
     def write_data(self, size, address, data):
-        if size == 1:
-            res, err = self.packetHandler.write1ByteTxRx(
-                    self.portHandler, self.id, address, data)
-        elif size == 2:
-            res, err = self.packetHandler.write2ByteTxRx(
-                    self.portHandler, self.id, address, data)
-        elif size == 4:
-            res, err = self.packetHandler.write4ByteTxRx(
-                    self.portHandler, self.id, address, data)
-        else:
-            raise InvalidDataSize("write data called with size " + str(size))
+        retry = 20
+        success = False
+        while not success and retry > 0:
+            if size == 1:
+                res, err = self.packetHandler.write1ByteTxRx(
+                        self.portHandler, self.id, address, data)
+            elif size == 2:
+                res, err = self.packetHandler.write2ByteTxRx(
+                        self.portHandler, self.id, address, data)
+            elif size == 4:
+                res, err = self.packetHandler.write4ByteTxRx(
+                        self.portHandler, self.id, address, data)
+            else:
+                raise InvalidDataSize("write data called with size " + str(size))
+            success = self.get_com_return(res, err)
+            time.sleep(10e-3)
+            retry -= 1
+        if not self.get_com_return(res, err):
+            pass
+            # raise ReadError("packet handler responded with " + str(res))
         return self.get_com_return(res, err)
 
     def read_data(self, size, address):
-        print(size,address)
-        if size == 1:
-            val, res, err = self.packetHandler.read1ByteTxRx(
-                    self.portHandler, self.id, address)
-        elif size == 2:
-            val, res, err = self.packetHandler.read2ByteTxRx(
-                    self.portHandler, self.id, address)
-        elif size == 4:
-            val, res, err = self.packetHandler.read4ByteTxRx(
-                    self.portHandler, self.id, address)
-        else:
-            raise InvalidDataSize("write data called with size " + str(size))
+        retry = 20
+        success = False
+        while not success and retry > 0:
+            if size == 1:
+                val, res, err = self.packetHandler.read1ByteTxRx(
+                        self.portHandler, self.id, address)
+            elif size == 2:
+                val, res, err = self.packetHandler.read2ByteTxRx(
+                        self.portHandler, self.id, address)
+            elif size == 4:
+                val, res, err = self.packetHandler.read4ByteTxRx(
+                        self.portHandler, self.id, address)
+            else:
+                raise InvalidDataSize("write data called with size " + str(size))
+            success = self.get_com_return(res, err)
+            time.sleep(10e-3)
+            retry -= 1
         if not self.get_com_return(res, err):
-            raise ReadError("packet handler responded with " + str(res))
+            # pass
+            raise ReadError("packet handler responded with " + str(res) +', val: ' + str(val))
         return val
 
     def setup_methods(self, json):
@@ -131,7 +146,8 @@ class DynamixelManager(object):
     def enable_all(self):
         success = True
         for motor in self.dxl_dict.values():
-            success &= motor.set_torque_enable(True)
+            if not motor.get_torque_enable():
+                success &= motor.set_torque_enable(True)
         return success
 
     def disable_all(self):
@@ -143,5 +159,8 @@ class DynamixelManager(object):
     def for_all(self, func):
         for motor in self.dxl_dict.values():
             func(motor)
-
+                
+    def reboot(self):
+        for motor in self.dxl_dict.values():
+            self.packetHandler.reboot(self.portHandler,motor.id)
 
